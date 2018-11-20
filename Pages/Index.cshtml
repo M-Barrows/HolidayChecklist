@@ -1,0 +1,85 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+<div id="App" class= "container">
+    <div id = "searchForm" class = "container" style = "padding-top: 10px;">
+    <form>
+        <div class = "row">
+            <div class = "col-xs-8">
+                <input v-model="searchTerm" class="form-control form-control" type="text" placeholder="Search for a show..."v-on:keyup="searchShow()">
+            </div>
+            <div class = "col-xs-2">
+                <button id = "searchSubmit" type = "submit" class = "btn btn-primary" v-on:click.stop.prevent='searchShow()'>Find</button>
+            </div>
+            <div class = "col-xs-2">
+                <button id = "searchCancel" class = "btn btn-default" v-on:click.stop.prevent="emptySearch()">Back</button>
+            </div>
+        </div>
+    </form>
+    </div>
+    <div id = "searchResults" class = "container" style="padding-top: 15px;" v-if="showSearchResults">
+        <div class = "col-xs-12" v-for = "item in searchResults">
+            <div class = "col-xs-10">
+                <img v-bind:src="imgURL + item.poster_path" v-bind:alt = "item.name" style="max-width: 100%;"> 
+            </div>
+            <div class = "col-xs-2">
+                <button class = "btn btn-success"><span class="glyphicon glyphicon-floppy-disk" style="color:black"></span></button>
+            </div>
+        </div> 
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    var ItemsVue = new Vue({
+            el: '#App',
+            data: {
+                searchTerm: "",
+                searchResults: "",
+                showSearchResults: true,
+                baseURL: "https://api.themoviedb.org/3/",
+                imgURL: "https://image.tmdb.org/t/p/w200",
+                apiKEY: "api_key=dfb21457261ef1c427601ffcefc3da80"
+            },
+            
+            mounted: function () {
+            
+               
+            },
+            methods: { 
+                searchShow: function(searchTerm){
+                    var self = this;
+                    self.showSearchResults = true;
+                    if(self.searchTerm.length>=3){
+                        $.ajax({
+                        url: self.baseURL + "search/tv?"+ self.apiKEY +"&language=en-US&query=" + self.searchTerm + "&page=1",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'GET',
+                        success: function (data) {
+                            self.searchResults = data.results.sort(function(a,b){
+                                return b.popularity - a.popularity;
+                            }).slice(0,5);
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't find your shows. D:");
+                        }
+                        });
+                    }
+                },
+                emptySearch: function(){
+                    var self = this;
+                    self.searchResults = '';
+                    self.searchTerm = '';
+                    self.showSearchResults = false;
+                },
+                saveShow: function(){
+
+                }
+            }     
+        });
+</script>
+}

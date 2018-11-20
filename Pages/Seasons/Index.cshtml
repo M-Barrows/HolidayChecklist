@@ -1,0 +1,42 @@
+@page
+@model HolidayChecklist.Pages.Seasons.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Season[0].SeasonNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Season[0].First_Air_Date)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Season) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SeasonNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.First_Air_Date)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.ParentShowID">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.ParentShowID">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.ParentShowID">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

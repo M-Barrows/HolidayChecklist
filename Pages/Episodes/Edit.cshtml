@@ -1,0 +1,50 @@
+@page
+@model HolidayChecklist.Pages.Episodes.EditModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2>Edit</h2>
+
+<h4>Episode</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Episode.ParentShowID" />
+            <div class="form-group">
+                <label asp-for="Episode.ParentSeasonNumber" class="control-label"></label>
+                <input asp-for="Episode.ParentSeasonNumber" class="form-control" />
+                <span asp-validation-for="Episode.ParentSeasonNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Episode.Title" class="control-label"></label>
+                <input asp-for="Episode.Title" class="form-control" />
+                <span asp-validation-for="Episode.Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Episode.Overview" class="control-label"></label>
+                <input asp-for="Episode.Overview" class="form-control" />
+                <span asp-validation-for="Episode.Overview" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Episode.First_Air_Date" class="control-label"></label>
+                <input asp-for="Episode.First_Air_Date" class="form-control" />
+                <span asp-validation-for="Episode.First_Air_Date" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
