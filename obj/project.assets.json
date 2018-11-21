@@ -12549,11 +12549,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\GitHub\\HolidayChecklist\\HolidayChecklist.csproj",
+      "projectUniqueName": "E:\\GitHub\\HC2\\HolidayChecklist\\HolidayChecklist.csproj",
       "projectName": "HolidayChecklist",
-      "projectPath": "E:\\GitHub\\HolidayChecklist\\HolidayChecklist.csproj",
+      "projectPath": "E:\\GitHub\\HC2\\HolidayChecklist\\HolidayChecklist.csproj",
       "packagesPath": "C:\\Users\\MBarr\\.nuget\\packages\\",
-      "outputPath": "E:\\GitHub\\HolidayChecklist\\obj\\",
+      "outputPath": "E:\\GitHub\\HC2\\HolidayChecklist\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

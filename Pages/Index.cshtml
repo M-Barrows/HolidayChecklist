@@ -3,15 +3,12 @@
 @{
     ViewData["Title"] = "Home page";
 }
+
 <div id="App" class= "container">
-    <div id = "searchForm" class = "container" style = "padding-top: 10px;">
-    <form>
-        <div class = "row">
+    <div id = "searchForm" class = "container" style = "padding-top: 20px;">
+        <form>
             <div class = "col-xs-8">
                 <input v-model="searchTerm" class="form-control form-control" type="text" placeholder="Search for a show..."v-on:keyup="searchShow()">
-                <ul class = "list-group">
-                     <li  v-for = "item in searchResults" class="list-group-item">{{item.name}}</li> 
-                </ul>
             </div>
             <div class = "col-xs-2">
                 <button id = "searchSubmit" type = "submit" class = "btn btn-primary" v-on:click.stop.prevent='searchShow()'>Find</button>
@@ -19,18 +16,25 @@
             <div class = "col-xs-2">
                 <button id = "searchCancel" class = "btn btn-default" v-on:click.stop.prevent="emptySearch()">Back</button>
             </div>
-        </div>
-    </form>
+        </form>
     </div>
-    <div id = "searchResults" class = "container" style="padding-top: 15px;" v-if="showSearchResults">
-        <div class = "col-xs-12" v-for = "item in searchResults">
-            <div class = "col-xs-10">
-                <img v-bind:src="imgURL + item.poster_path" v-bind:alt = "item.name" style="max-width: 100%;"> 
-            </div>
-            <div class = "col-xs-2">
-                <button class = "btn btn-success"><span class="glyphicon glyphicon-floppy-disk" style="color:black"></span></button>
-            </div>
-        </div> 
+    <div  v-if ="showSearchResults" class="container">
+      <div class="row text-center text-lg-left">
+        <div class="col-md-12">
+          <div v-for = "item in searchResults" class="list-group my-3">
+            <a href="#" class="list-group-item list-group-item-action d-flex   align-items-center" v-on:click.stop.prevent="showDetails(item)">
+                <div class="w-100">
+                    <h4 v-if="desktop">{{item.name}}</h4>
+                    <p v-else class="mb-0 text-center">{{item.name}}</p>
+                </div>
+                <img v-if="desktop" class="d-block float-right img-thumbnail img-fluid" v-bind:src="imgURL + item.poster_path" width="60" height="60" > 
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-if = "showHighlightedShow" class = "container">
+        <p>{{highlightedShow.name}}</p>
     </div>
 </div>
 
@@ -39,9 +43,12 @@
     var ItemsVue = new Vue({
             el: '#App',
             data: {
+                desktop: false,
                 searchTerm: "",
                 searchResults: "",
+                highlightedShow: "",
                 showSearchResults: false,
+                showHighlightedShow: false,
                 baseURL: "https://api.themoviedb.org/3/",
                 imgURL: "https://image.tmdb.org/t/p/w200",
                 apiKEY: "api_key=dfb21457261ef1c427601ffcefc3da80"
@@ -65,7 +72,7 @@
                         success: function (data) {
                             self.searchResults = data.results.sort(function(a,b){
                                 return b.popularity - a.popularity;
-                            }).slice(0,5);
+                            }).slice(0,3);
                         },
                         error: function (error) {
                             console.log(error);
@@ -83,8 +90,11 @@
                     self.searchTerm = '';
                     self.showSearchResults = false;
                 },
-                saveShow: function(){
-
+                showDetails: function(item){
+                    var self = this;
+                    self.showSearchResults = false;
+                    self.highlightedShow= item;
+                    self.showHighlightedShow = true;
                 }
             }     
         });
