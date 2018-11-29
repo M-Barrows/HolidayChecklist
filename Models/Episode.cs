@@ -19,6 +19,10 @@ namespace HolidayChecklist.Models
         public string Overview {get; set;}
 
         public DateTime First_Air_Date {get; set;}
+
+        public int SeasonNumber {get; set;}
+        public Season Season {get; set;}
+
     }
 }
             

@@ -3,38 +3,61 @@
 @{
     ViewData["Title"] = "Home page";
 }
-
-<div id="App" class= "container">
+<div class="container" id="App">
     <div id = "searchForm" class = "container" style = "padding-top: 20px;">
         <form>
-            <div class = "col-xs-8">
+            <div class = "col-xs-12 col-md-8">
                 <input v-model="searchTerm" class="form-control form-control" type="text" placeholder="Search for a show..."v-on:keyup="searchShow()">
             </div>
-            <div class = "col-xs-2">
-                <button id = "searchSubmit" type = "submit" class = "btn btn-primary" v-on:click.stop.prevent='searchShow()'>Find</button>
+            <div class = "col-md-2">
+                <button  v-if="desktop" id = "searchSubmit" type = "submit" class = "btn btn-primary" v-on:click.stop.prevent='searchShow()'>Find</button>
             </div>
-            <div class = "col-xs-2">
-                <button id = "searchCancel" class = "btn btn-default" v-on:click.stop.prevent="emptySearch()">Back</button>
+            <div class = "col-md-2">
+                <button v-if="desktop" id = "searchCancel" class = "btn btn-default" v-on:click.stop.prevent="emptySearch()">Back</button>
             </div>
         </form>
     </div>
-    <div  v-if ="showSearchResults" class="container">
-      <div class="row text-center text-lg-left">
-        <div class="col-md-12">
-          <div v-for = "item in searchResults" class="list-group my-3">
-            <a href="#" class="list-group-item list-group-item-action d-flex   align-items-center" v-on:click.stop.prevent="showDetails(item)">
-                <div class="w-100">
-                    <h4 v-if="desktop">{{item.name}}</h4>
-                    <p v-else class="mb-0 text-center">{{item.name}}</p>
+    <div  v-show ="showSearchResults" class="container" stle="z-index: 3;">
+      <div class="row text-center text-left">
+        <div class="col-xs-12 col-md-8">
+          <div class="list-group my-3">
+            <a v-for = "item in searchResults" href="#" class="list-group-item list-group-item-action d-flex   align-items-center">
+                <div class ="row">
+                    <h4 v-if="desktop">{{item.name}} ({{item.first_air_date}})</h4>
+                    <p v-else class="mb-0 text-center">{{item.name}} - ({{item.first_air_date.substring(0,4)}})</p>
+                    <img v-if="desktop" class="d-block float-right img-thumbnail img-fluid" v-bind:src="imgURL + item.poster_path" width="60" height="60" > 
+                    <button class="btn btn-danger"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button>
+                    <button class="btn btn-info" v-on:click.stop.prevent="showDetails(item)"><span class="glyphicon glyphicon-info-sign" aria-hidden="true" style ="color:white;"></span></button>
                 </div>
-                <img v-if="desktop" class="d-block float-right img-thumbnail img-fluid" v-bind:src="imgURL + item.poster_path" width="60" height="60" > 
             </a>
           </div>
-        </div>
+        </div>  
       </div>
     </div>
-    <div v-if = "showHighlightedShow" class = "container">
-        <p>{{highlightedShow.name}}</p>
+    <div v-if = "showHighlightedShow" class = "container" style ="background-color: white; margin-top: 20px;">
+        <div class="col-xs-12 col-md-12">
+            <div class="row">
+                <h3 style="text-align:center;">{{highlightedShow.name}}</h3>
+            </div>
+            <div class="row">
+                <div class="col-xs-4" >
+                    <div class="row">
+                        <img v-bind:src="imgURL + highlightedShow.poster_path" width="100%" style="border-radius: 10px;"/>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12"><button v-on:click="saveShow(highlightedShow)" class="btn btn-danger" style="width:100%; margin-top:10px"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button></div>
+                    </div>
+                </div>
+                <div class="col-xs-8">
+                    <p>First Air Date: {{highlightedShow.first_air_date}}</p>
+                    <p>{{highlightedShow.overview}}</p>
+                </div>
+            </div>
+            <div class="row">
+                <span><button class="btn btn-default" style="width:100%;margin-bottom:10px;" v-on:click.stop.prevent="emptySearch()">Cancel</button></span>
+            </div>
+        </div>
+        
     </div>
 </div>
 
@@ -47,6 +70,18 @@
                 searchTerm: "",
                 searchResults: "",
                 highlightedShow: "",
+                savedShow:{ 
+                    ID: 0,
+                    First_Air_Date: "",
+                    Title: "",
+                    Seasons: [
+                    {
+                        Episodes: [
+                        {}],
+                    }],
+                    Overview: "",
+                    Backdrop_Path: "",
+                },
                 showSearchResults: false,
                 showHighlightedShow: false,
                 baseURL: "https://api.themoviedb.org/3/",
@@ -62,7 +97,7 @@
                 searchShow: function(searchTerm){
                     var self = this;
                     
-                    if(self.searchTerm.length>=3){
+                    if(self.searchTerm.length>=2){
                         self.showSearchResults = true;
                         $.ajax({
                         url: self.baseURL + "search/tv?"+ self.apiKEY +"&language=en-US&query=" + self.searchTerm + "&page=1",
@@ -89,12 +124,64 @@
                     self.searchResults = '';
                     self.searchTerm = '';
                     self.showSearchResults = false;
+                    self.showHighlightedShow = false;
                 },
                 showDetails: function(item){
                     var self = this;
                     self.showSearchResults = false;
                     self.highlightedShow= item;
                     self.showHighlightedShow = true;
+                },
+                saveShow: function(item){
+                    var self = this;
+                    $.ajax({
+                        url: self.baseURL + "tv/" + item.id + "?"+ self.apiKEY +"&language=en-US",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'GET',
+                        success: function (show) {
+                            self.savedShow.ID = show.id;
+                            self.savedShow.First_Air_Date = show.first_air_date;
+                            self.savedShow.Title = show.name;
+                            self.savedShow.Overview = show.overview;
+                            self.savedShow.Backdrop_Path = show.backdrop_path;
+                            
+                            for(seasonIndex in show.seasons){
+                                $.ajax({
+                                    url: self.baseURL + "tv/" + show.id + "/season/" + show.seasons[seasonIndex].season_number +"?"+ self.apiKEY +"&language=en-US",
+                                    dataType: 'json',
+                                    contentType: 'application/json',
+                                    method: 'GET',
+                                    success: function (season) {
+                                        self.savedShow.Seasons.push({
+                                            ParentShowID: show.id,
+                                            SeasonNumber: season.season_number,
+                                            First_Air_Date: season.air_date,
+                                            Episodes: season.episodes
+                                        });
+                                    },
+                                    error: function(error){
+                                        alert("we could not save your episodes");
+                                    }
+                                });
+                            }
+                            self.savedShow.Seasons.shift();
+                            $.ajax({
+                                url: "/api/TVShows",
+                                dataType: 'json',
+                                contentType: 'application/json',
+                                method: 'POST',
+                                data: JSON.stringify(self.savedShow),
+                                success: function(){
+                                    console.log("show saved!");
+                                }
+                            })
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't save your show. D:");
+                        }
+                    });
                 }
             }     
         });

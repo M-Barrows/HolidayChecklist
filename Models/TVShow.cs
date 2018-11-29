@@ -16,7 +16,7 @@ namespace HolidayChecklist.Models
         
         public string Title {get; set;}
 
-        public IEnumerable<Season> Seasons {get; set;}
+        public List<Season> Seasons {get; set;}
 
         public string Overview {get; set;}
 
