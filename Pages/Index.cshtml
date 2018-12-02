@@ -21,13 +21,13 @@
       <div class="row text-center text-left">
         <div class="col-xs-12 col-md-8">
           <div class="list-group my-3">
-            <a v-for = "item in searchResults" href="#" class="list-group-item list-group-item-action d-flex   align-items-center">
+            <a v-for = "item in searchResults"v-on:click.stop.prevent="showDetails(item)" href="#" class="list-group-item list-group-item-action d-flex   align-items-center">
                 <div class ="row">
                     <h4 v-if="desktop">{{item.name}} ({{item.first_air_date}})</h4>
                     <p v-else class="mb-0 text-center">{{item.name}} - ({{item.first_air_date.substring(0,4)}})</p>
                     <img v-if="desktop" class="d-block float-right img-thumbnail img-fluid" v-bind:src="imgURL + item.poster_path" width="60" height="60" > 
-                    <button class="btn btn-danger"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button>
-                    <button class="btn btn-info" v-on:click.stop.prevent="showDetails(item)"><span class="glyphicon glyphicon-info-sign" aria-hidden="true" style ="color:white;"></span></button>
+                    <button class="btn btn-danger"v-if="desktop"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button>
+                    <button class="btn btn-info"v-if="desktop"><span class="glyphicon glyphicon-info-sign" aria-hidden="true" style ="color:white;"></span></button>
                 </div>
             </a>
           </div>
@@ -37,7 +37,10 @@
     <div v-if = "showHighlightedShow" class = "container" style ="background-color: white; margin-top: 20px;">
         <div class="col-xs-12 col-md-12">
             <div class="row">
-                <h3 style="text-align:center;">{{highlightedShow.name}}</h3>
+                <div class = "col-xs-10">
+                    <h3 style="text-align:center;">{{highlightedShow.name}}</h3>
+                </div>
+                <div class = "col-xs-2"> <button class="btn btn-default"v-if="desktop"><span class="glyphicon glyphicon-remove" aria-hidden="true" style ="color:white;"></span></button></div>
             </div>
             <div class="row">
                 <div class="col-xs-4" >
@@ -71,21 +74,38 @@
                 searchResults: "",
                 highlightedShow: "",
                 savedShow:{ 
-                    ID: 0,
-                    First_Air_Date: "",
-                    Title: "",
-                    Seasons: [
-                    {
-                        Episodes: [
-                        {}],
-                    }],
-                    Overview: "",
-                    Backdrop_Path: "",
+                    ShowID: 0,
+                    ShowTitle: "",
+                    ShowBackdropPath: "",
+                    ShowOverview:"",
+                    SeasonNumber: 0,
+                    EpisodeNumber: 0,
+                    EpisodeAirDate: "1700-01-01",
+                    EpisodeTitle: "",
+                    EpisodeOverview: "",
                 },
+                ajaxSeasons: [{
+                    id: 0,
+                    episodes:[] ,
+                    NumberOfSeasons: 0,
+                    Season: 0
+                }],
+                ajaxEpisodes: [{
+                    ShowID: 0,
+                    SeasonNumber: 0,
+                    ShowTitle: "",
+                    ShowBackdropPath: "",
+                    ShowOverview: "",
+                    EpisodeAirDate: "",
+                    EpisodeNumber: 0,
+                    EpisodeTitle: "",
+                    EpisodeOverview: ""
+                }],
+                episodes: [] ,
                 showSearchResults: false,
                 showHighlightedShow: false,
                 baseURL: "https://api.themoviedb.org/3/",
-                imgURL: "https://image.tmdb.org/t/p/w200",
+                imgURL: "https://image.tmdb.org/t/p/w300",
                 apiKEY: "api_key=dfb21457261ef1c427601ffcefc3da80"
             },
             
@@ -129,60 +149,89 @@
                 showDetails: function(item){
                     var self = this;
                     self.showSearchResults = false;
-                    self.highlightedShow= item;
-                    self.showHighlightedShow = true;
-                },
-                saveShow: function(item){
-                    var self = this;
                     $.ajax({
                         url: self.baseURL + "tv/" + item.id + "?"+ self.apiKEY +"&language=en-US",
                         dataType: 'json',
                         contentType: 'application/json',
                         method: 'GET',
                         success: function (show) {
-                            self.savedShow.ID = show.id;
-                            self.savedShow.First_Air_Date = show.first_air_date;
-                            self.savedShow.Title = show.name;
-                            self.savedShow.Overview = show.overview;
-                            self.savedShow.Backdrop_Path = show.backdrop_path;
-                            
-                            for(seasonIndex in show.seasons){
+                            self.ajaxShowDetails = show;
+                            self.highlightedShow = show;
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't find that show. D:");
+                        }
+                    });
+                    self.showHighlightedShow = true;
+                },
+                getSeasonDetails: function(id,season){
+                    var self = this;
+                    $.ajax({
+                        url: self.baseURL + "tv/" + id + "/season/" + season +"?"+ self.apiKEY +"&language=en-US",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'GET',
+                        success: function (season) {
+
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't find those episodes. D:");
+                        }
+                    });
+                },
+                saveShow: function(item){
+                    var self = this;
+                    for(var i = 0;i < self.highlightedShow.number_of_seasons;i++){
+                        (function(){
+                            var seasonnum = i;
+                            setTimeout(function(){
                                 $.ajax({
-                                    url: self.baseURL + "tv/" + show.id + "/season/" + show.seasons[seasonIndex].season_number +"?"+ self.apiKEY +"&language=en-US",
+                                    url: self.baseURL + "tv/" + item.id + "/season/" + (seasonnum+1) +"?"+ self.apiKEY +"&language=en-US",
                                     dataType: 'json',
                                     contentType: 'application/json',
                                     method: 'GET',
                                     success: function (season) {
-                                        self.savedShow.Seasons.push({
-                                            ParentShowID: show.id,
-                                            SeasonNumber: season.season_number,
-                                            First_Air_Date: season.air_date,
-                                            Episodes: season.episodes
-                                        });
+                                        newSeason = {
+                                            id: item.id,
+                                            episodes: season.episodes,
+                                            NumberOfSeasons: item.number_of_episodes,
+                                            Season: season.season_number
+                                        };
+                                        console.log("test");
+                                        for(var j = 0;j < season.episodes.length;j++){
+                                            
+                                            (function(){
+                                                var episode = j;
+                                                setTimeout(function(){
+                                                    newEpisode = {
+                                                        ShowID: item.id,
+                                                        SeasonNumber: season.season_number,
+                                                        ShowTitle: item.name,
+                                                        ShowBackdropPath: item.backdrop_path,
+                                                        ShowOverview: item.overview,
+                                                        EpisodeAirDate: season.episodes[episode].air_date,
+                                                        EpisodeNumber: season.episodes[episode].episode_number,
+                                                        EpisodeTitle: season.episodes[episode].name,
+                                                        EpisodeOverview: season.episodes[episode].overview,
+                                                    };
+                                                    self.ajaxEpisodes.push(newEpisode);
+                                                },1000);
+                                            })();
+                                        };
+                                        self.ajaxSeasons.push(newSeason);
                                     },
-                                    error: function(error){
-                                        alert("we could not save your episodes");
+                                    error: function (error) {
+                                        console.log(error);
+                                        alert("Oh no! We couldn't find those episodes. D:");
                                     }
                                 });
-                            }
-                            self.savedShow.Seasons.shift();
-                            $.ajax({
-                                url: "/api/TVShows",
-                                dataType: 'json',
-                                contentType: 'application/json',
-                                method: 'POST',
-                                data: JSON.stringify(self.savedShow),
-                                success: function(){
-                                    console.log("show saved!");
-                                }
-                            })
-                        },
-                        error: function (error) {
-                            console.log(error);
-                            alert("Oh no! We couldn't save your show. D:");
-                        }
-                    });
-                }
+                            },1000);
+                        })();
+                    };
+                },
+                
             }     
         });
 </script>

@@ -13,26 +13,51 @@
     <div class="col-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Episode.ParentShowID" />
+            <input type="hidden" asp-for="Episode.EpisodeID" />
             <div class="form-group">
-                <label asp-for="Episode.ParentSeasonNumber" class="control-label"></label>
-                <input asp-for="Episode.ParentSeasonNumber" class="form-control" />
-                <span asp-validation-for="Episode.ParentSeasonNumber" class="text-danger"></span>
+                <label asp-for="Episode.ShowID" class="control-label"></label>
+                <input asp-for="Episode.ShowID" class="form-control" />
+                <span asp-validation-for="Episode.ShowID" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Episode.Title" class="control-label"></label>
-                <input asp-for="Episode.Title" class="form-control" />
-                <span asp-validation-for="Episode.Title" class="text-danger"></span>
+                <label asp-for="Episode.SeasonNumber" class="control-label"></label>
+                <input asp-for="Episode.SeasonNumber" class="form-control" />
+                <span asp-validation-for="Episode.SeasonNumber" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Episode.Overview" class="control-label"></label>
-                <input asp-for="Episode.Overview" class="form-control" />
-                <span asp-validation-for="Episode.Overview" class="text-danger"></span>
+                <label asp-for="Episode.ShowTitle" class="control-label"></label>
+                <input asp-for="Episode.ShowTitle" class="form-control" />
+                <span asp-validation-for="Episode.ShowTitle" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Episode.First_Air_Date" class="control-label"></label>
-                <input asp-for="Episode.First_Air_Date" class="form-control" />
-                <span asp-validation-for="Episode.First_Air_Date" class="text-danger"></span>
+                <label asp-for="Episode.ShowBackdropPath" class="control-label"></label>
+                <input asp-for="Episode.ShowBackdropPath" class="form-control" />
+                <span asp-validation-for="Episode.ShowBackdropPath" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Episode.ShowOverview" class="control-label"></label>
+                <input asp-for="Episode.ShowOverview" class="form-control" />
+                <span asp-validation-for="Episode.ShowOverview" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Episode.EpisodeAirDate" class="control-label"></label>
+                <input asp-for="Episode.EpisodeAirDate" class="form-control" />
+                <span asp-validation-for="Episode.EpisodeAirDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Episode.EpisodeNumber" class="control-label"></label>
+                <input asp-for="Episode.EpisodeNumber" class="form-control" />
+                <span asp-validation-for="Episode.EpisodeNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Episode.EpisodeTitle" class="control-label"></label>
+                <input asp-for="Episode.EpisodeTitle" class="form-control" />
+                <span asp-validation-for="Episode.EpisodeTitle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Episode.EpisodeOverview" class="control-label"></label>
+                <input asp-for="Episode.EpisodeOverview" class="form-control" />
+                <span asp-validation-for="Episode.EpisodeOverview" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-default" />

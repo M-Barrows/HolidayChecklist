@@ -10,19 +10,24 @@ namespace HolidayChecklist.Models
     public class Episode
     {
         [Key]
-        public int ParentShowID {get; set;}
-
-        public int ParentSeasonNumber {get; set;}
-
-        public string Title {get; set;}
-
-        public string Overview {get; set;}
-
-        public DateTime First_Air_Date {get; set;}
+        public int EpisodeID {get; set;}
+        public int ShowID {get; set;}
 
         public int SeasonNumber {get; set;}
-        public Season Season {get; set;}
+
+        public string ShowTitle {get; set;}
+
+        public string ShowBackdropPath {get;set;}
+
+        public string ShowOverview {get; set;}
+
+        public DateTime EpisodeAirDate {get; set;}
+
+        public int EpisodeNumber {get; set;}
+
+        public string EpisodeTitle {get;set;}
+
+        public string EpisodeOverview {get; set;}
 
     }
 }
-            

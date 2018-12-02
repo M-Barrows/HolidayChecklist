@@ -27,7 +27,7 @@ namespace HolidayChecklist.Pages.Episodes
                 return NotFound();
             }
 
-            Episode = await _context.Episode.FirstOrDefaultAsync(m => m.ParentShowID == id);
+            Episode = await _context.Episode.FirstOrDefaultAsync(m => m.EpisodeID == id);
 
             if (Episode == null)
             {

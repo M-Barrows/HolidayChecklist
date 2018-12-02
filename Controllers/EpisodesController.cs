@@ -11,56 +11,56 @@ namespace HolidayChecklist.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TVShowsController : ControllerBase
+    public class EpisodesController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public TVShowsController(AppDbContext context)
+        public EpisodesController(AppDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/TVShows
+        // GET: api/Episodes
         [HttpGet]
-        public IEnumerable<TVShow> GetTVShow()
+        public IEnumerable<Episode> GetEpisode()
         {
-            return _context.TVShow;
+            return _context.Episode;
         }
 
-        // GET: api/TVShows/5
+        // GET: api/Episodes/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTVShow([FromRoute] int id)
+        public async Task<IActionResult> GetEpisode([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var tVShow = await _context.TVShow.FindAsync(id);
+            var episode = await _context.Episode.FindAsync(id);
 
-            if (tVShow == null)
+            if (episode == null)
             {
                 return NotFound();
             }
 
-            return Ok(tVShow);
+            return Ok(episode);
         }
 
-        // PUT: api/TVShows/5
+        // PUT: api/Episodes/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutTVShow([FromRoute] int id, [FromBody] TVShow tVShow)
+        public async Task<IActionResult> PutEpisode([FromRoute] int id, [FromBody] Episode episode)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != tVShow.Id)
+            if (id != episode.EpisodeID)
             {
                 return BadRequest();
             }
 
-            _context.Entry(tVShow).State = EntityState.Modified;
+            _context.Entry(episode).State = EntityState.Modified;
 
             try
             {
@@ -68,7 +68,7 @@ namespace HolidayChecklist.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!TVShowExists(id))
+                if (!EpisodeExists(id))
                 {
                     return NotFound();
                 }
@@ -81,45 +81,45 @@ namespace HolidayChecklist.Controllers
             return NoContent();
         }
 
-        // POST: api/TVShows
+        // POST: api/Episodes
         [HttpPost]
-        public async Task<IActionResult> PostTVShow([FromBody] TVShow tVShow)
+        public async Task<IActionResult> PostEpisode([FromBody] Episode episode)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.TVShow.Add(tVShow);
+            _context.Episode.Add(episode);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTVShow", new { id = tVShow.Id }, tVShow);
+            return CreatedAtAction("GetEpisode", new { id = episode.EpisodeID }, episode);
         }
 
-        // DELETE: api/TVShows/5
+        // DELETE: api/Episodes/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTVShow([FromRoute] int id)
+        public async Task<IActionResult> DeleteEpisode([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var tVShow = await _context.TVShow.FindAsync(id);
-            if (tVShow == null)
+            var episode = await _context.Episode.FindAsync(id);
+            if (episode == null)
             {
                 return NotFound();
             }
 
-            _context.TVShow.Remove(tVShow);
+            _context.Episode.Remove(episode);
             await _context.SaveChangesAsync();
 
-            return Ok(tVShow);
+            return Ok(episode);
         }
 
-        private bool TVShowExists(int id)
+        private bool EpisodeExists(int id)
         {
-            return _context.TVShow.Any(e => e.Id == id);
+            return _context.Episode.Any(e => e.EpisodeID == id);
         }
     }
 }
