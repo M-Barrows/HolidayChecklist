@@ -3,34 +3,64 @@
 @{
     ViewData["Title"] = "Home page";
 }
-<div id="App" class= "container">
-    <div id = "searchForm" class = "container" style = "padding-top: 10px;">
-    <form>
-        <div class = "row">
-            <div class = "col-xs-8">
+<div class="container" id="App">
+    <div id = "searchForm" class = "container" style = "padding-top: 20px;">
+        <form>
+            <div class = "col-xs-12 col-md-8">
                 <input v-model="searchTerm" class="form-control form-control" type="text" placeholder="Search for a show..."v-on:keyup="searchShow()">
-                <ul class = "list-group">
-                     <li  v-for = "item in searchResults" class="list-group-item">{{item.name}}</li> 
-                </ul>
             </div>
-            <div class = "col-xs-2">
-                <button id = "searchSubmit" type = "submit" class = "btn btn-primary" v-on:click.stop.prevent='searchShow()'>Find</button>
+            <div class = "col-md-2">
+                <button  v-if="desktop" id = "searchSubmit" type = "submit" class = "btn btn-primary" v-on:click.stop.prevent='searchShow()'>Find</button>
             </div>
-            <div class = "col-xs-2">
-                <button id = "searchCancel" class = "btn btn-default" v-on:click.stop.prevent="emptySearch()">Back</button>
+            <div class = "col-md-2">
+                <button v-if="desktop" id = "searchCancel" class = "btn btn-default" v-on:click.stop.prevent="emptySearch()">Back</button>
+            </div>
+        </form>
+    </div>
+    <div  v-show ="showSearchResults" class="container" stle="z-index: 3;">
+      <div class="row text-center text-left">
+        <div class="col-xs-12 col-md-8">
+          <div class="list-group my-3">
+            <a v-for = "item in searchResults"v-on:click.stop.prevent="showDetails(item)" href="#" class="list-group-item list-group-item-action d-flex   align-items-center">
+                <div class ="row">
+                    <h4 v-if="desktop">{{item.name}} ({{item.first_air_date}})</h4>
+                    <p v-else class="mb-0 text-center">{{item.name}} - ({{item.first_air_date.substring(0,4)}})</p>
+                    <img v-if="desktop" class="d-block float-right img-thumbnail img-fluid" v-bind:src="imgURL + item.poster_path" width="60" height="60" > 
+                    <button class="btn btn-danger"v-if="desktop"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button>
+                    <button class="btn btn-info"v-if="desktop"><span class="glyphicon glyphicon-info-sign" aria-hidden="true" style ="color:white;"></span></button>
+                </div>
+            </a>
+          </div>
+        </div>  
+      </div>
+    </div>
+    <div v-if = "showHighlightedShow" class = "container" style ="background-color: white; margin-top: 20px;">
+        <div class="col-xs-12 col-md-12">
+            <div class="row">
+                <div class = "col-xs-10">
+                    <h3 style="text-align:center;">{{highlightedShow.name}}</h3>
+                </div>
+                <div class = "col-xs-2"> <button class="btn btn-default"v-if="desktop"><span class="glyphicon glyphicon-remove" aria-hidden="true" style ="color:white;"></span></button></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-4" >
+                    <div class="row">
+                        <img v-bind:src="imgURL + highlightedShow.poster_path" width="100%" style="border-radius: 10px;"/>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12"><button v-on:click="saveShow(highlightedShow)" class="btn btn-danger" style="width:100%; margin-top:10px"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button></div>
+                    </div>
+                </div>
+                <div class="col-xs-8">
+                    <p>First Air Date: {{highlightedShow.first_air_date}}</p>
+                    <p>{{highlightedShow.overview}}</p>
+                </div>
+            </div>
+            <div class="row">
+                <span><button class="btn btn-default" style="width:100%;margin-bottom:10px;" v-on:click.stop.prevent="emptySearch()">Cancel</button></span>
             </div>
         </div>
-    </form>
-    </div>
-    <div id = "searchResults" class = "container" style="padding-top: 15px;" v-if="showSearchResults">
-        <div class = "col-xs-12" v-for = "item in searchResults">
-            <div class = "col-xs-10">
-                <img v-bind:src="imgURL + item.poster_path" v-bind:alt = "item.name" style="max-width: 100%;"> 
-            </div>
-            <div class = "col-xs-2">
-                <button class = "btn btn-success"><span class="glyphicon glyphicon-floppy-disk" style="color:black"></span></button>
-            </div>
-        </div> 
+        
     </div>
 </div>
 
@@ -39,11 +69,43 @@
     var ItemsVue = new Vue({
             el: '#App',
             data: {
+                desktop: false,
                 searchTerm: "",
                 searchResults: "",
+                highlightedShow: "",
+                savedShow:{ 
+                    ShowID: 0,
+                    ShowTitle: "",
+                    ShowBackdropPath: "",
+                    ShowOverview:"",
+                    SeasonNumber: 0,
+                    EpisodeNumber: 0,
+                    EpisodeAirDate: "1700-01-01",
+                    EpisodeTitle: "",
+                    EpisodeOverview: "",
+                },
+                ajaxSeasons: [{
+                    id: 0,
+                    episodes:[] ,
+                    NumberOfSeasons: 0,
+                    Season: 0
+                }],
+                ajaxEpisodes: [{
+                    ShowID: 0,
+                    SeasonNumber: 0,
+                    ShowTitle: "",
+                    ShowBackdropPath: "",
+                    ShowOverview: "",
+                    EpisodeAirDate: "",
+                    EpisodeNumber: 0,
+                    EpisodeTitle: "",
+                    EpisodeOverview: ""
+                }],
+                episodes: [] ,
                 showSearchResults: false,
+                showHighlightedShow: false,
                 baseURL: "https://api.themoviedb.org/3/",
-                imgURL: "https://image.tmdb.org/t/p/w200",
+                imgURL: "https://image.tmdb.org/t/p/w300",
                 apiKEY: "api_key=dfb21457261ef1c427601ffcefc3da80"
             },
             
@@ -55,7 +117,7 @@
                 searchShow: function(searchTerm){
                     var self = this;
                     
-                    if(self.searchTerm.length>=3){
+                    if(self.searchTerm.length>=2){
                         self.showSearchResults = true;
                         $.ajax({
                         url: self.baseURL + "search/tv?"+ self.apiKEY +"&language=en-US&query=" + self.searchTerm + "&page=1",
@@ -65,7 +127,7 @@
                         success: function (data) {
                             self.searchResults = data.results.sort(function(a,b){
                                 return b.popularity - a.popularity;
-                            }).slice(0,5);
+                            }).slice(0,3);
                         },
                         error: function (error) {
                             console.log(error);
@@ -82,10 +144,94 @@
                     self.searchResults = '';
                     self.searchTerm = '';
                     self.showSearchResults = false;
+                    self.showHighlightedShow = false;
                 },
-                saveShow: function(){
+                showDetails: function(item){
+                    var self = this;
+                    self.showSearchResults = false;
+                    $.ajax({
+                        url: self.baseURL + "tv/" + item.id + "?"+ self.apiKEY +"&language=en-US",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'GET',
+                        success: function (show) {
+                            self.ajaxShowDetails = show;
+                            self.highlightedShow = show;
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't find that show. D:");
+                        }
+                    });
+                    self.showHighlightedShow = true;
+                },
+                getSeasonDetails: function(id,season){
+                    var self = this;
+                    $.ajax({
+                        url: self.baseURL + "tv/" + id + "/season/" + season +"?"+ self.apiKEY +"&language=en-US",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'GET',
+                        success: function (season) {
 
-                }
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't find those episodes. D:");
+                        }
+                    });
+                },
+                saveShow: function(item){
+                    var self = this;
+                    for(var i = 0;i < self.highlightedShow.number_of_seasons;i++){
+                        (function(){
+                            var seasonnum = i;
+                            setTimeout(function(){
+                                $.ajax({
+                                    url: self.baseURL + "tv/" + item.id + "/season/" + (seasonnum+1) +"?"+ self.apiKEY +"&language=en-US",
+                                    dataType: 'json',
+                                    contentType: 'application/json',
+                                    method: 'GET',
+                                    success: function (season) {
+                                        newSeason = {
+                                            id: item.id,
+                                            episodes: season.episodes,
+                                            NumberOfSeasons: item.number_of_episodes,
+                                            Season: season.season_number
+                                        };
+                                        console.log("test");
+                                        for(var j = 0;j < season.episodes.length;j++){
+                                            
+                                            (function(){
+                                                var episode = j;
+                                                setTimeout(function(){
+                                                    newEpisode = {
+                                                        ShowID: item.id,
+                                                        SeasonNumber: season.season_number,
+                                                        ShowTitle: item.name,
+                                                        ShowBackdropPath: item.backdrop_path,
+                                                        ShowOverview: item.overview,
+                                                        EpisodeAirDate: season.episodes[episode].air_date,
+                                                        EpisodeNumber: season.episodes[episode].episode_number,
+                                                        EpisodeTitle: season.episodes[episode].name,
+                                                        EpisodeOverview: season.episodes[episode].overview,
+                                                    };
+                                                    self.ajaxEpisodes.push(newEpisode);
+                                                },1000);
+                                            })();
+                                        };
+                                        self.ajaxSeasons.push(newSeason);
+                                    },
+                                    error: function (error) {
+                                        console.log(error);
+                                        alert("Oh no! We couldn't find those episodes. D:");
+                                    }
+                                });
+                            },1000);
+                        })();
+                    };
+                },
+                
             }     
         });
 </script>

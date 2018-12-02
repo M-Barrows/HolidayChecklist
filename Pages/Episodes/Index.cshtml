@@ -14,16 +14,31 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Episode[0].ParentSeasonNumber)
+                @Html.DisplayNameFor(model => model.Episode[0].ShowID)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Episode[0].Title)
+                @Html.DisplayNameFor(model => model.Episode[0].SeasonNumber)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Episode[0].Overview)
+                @Html.DisplayNameFor(model => model.Episode[0].ShowTitle)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Episode[0].First_Air_Date)
+                @Html.DisplayNameFor(model => model.Episode[0].ShowBackdropPath)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Episode[0].ShowOverview)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Episode[0].EpisodeAirDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Episode[0].EpisodeNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Episode[0].EpisodeTitle)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Episode[0].EpisodeOverview)
             </th>
             <th></th>
         </tr>
@@ -32,21 +47,36 @@
 @foreach (var item in Model.Episode) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.ParentSeasonNumber)
+                @Html.DisplayFor(modelItem => item.ShowID)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Title)
+                @Html.DisplayFor(modelItem => item.SeasonNumber)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Overview)
+                @Html.DisplayFor(modelItem => item.ShowTitle)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.First_Air_Date)
+                @Html.DisplayFor(modelItem => item.ShowBackdropPath)
             </td>
             <td>
-                <a asp-page="./Edit" asp-route-id="@item.ParentShowID">Edit</a> |
-                <a asp-page="./Details" asp-route-id="@item.ParentShowID">Details</a> |
-                <a asp-page="./Delete" asp-route-id="@item.ParentShowID">Delete</a>
+                @Html.DisplayFor(modelItem => item.ShowOverview)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EpisodeAirDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EpisodeNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EpisodeTitle)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EpisodeOverview)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.EpisodeID">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.EpisodeID">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.EpisodeID">Delete</a>
             </td>
         </tr>
 }
