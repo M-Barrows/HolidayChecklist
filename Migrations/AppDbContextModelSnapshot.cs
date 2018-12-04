@@ -39,6 +39,8 @@ namespace HolidayChecklist.Migrations
 
                     b.Property<string>("ShowTitle");
 
+                    b.Property<bool>("Watched");
+
                     b.HasKey("EpisodeID");
 
                     b.ToTable("Episode");

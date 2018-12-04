@@ -24,7 +24,8 @@ namespace HolidayChecklist.Controllers
         [HttpGet]
         public IEnumerable<Episode> GetEpisode()
         {
-            return _context.Episode;
+            var results = _context.Episode.Distinct().Where(x => x.EpisodeAirDate.Month == 12).OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber);
+            return results;
         }
 
         // GET: api/Episodes/5
@@ -60,7 +61,9 @@ namespace HolidayChecklist.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(episode).State = EntityState.Modified;
+           _context.Entry(episode).State = EntityState.Modified;
+
+            _context.SaveChanges();
 
             try
             {
@@ -95,9 +98,8 @@ namespace HolidayChecklist.Controllers
 
             return CreatedAtAction("GetEpisode", new { id = episode.EpisodeID }, episode);
         }
-
-        // DELETE: api/Episodes/5
-        [HttpDelete("{id}")]
+        // DELETE: api/Episodes/
+        [HttpDelete]
         public async Task<IActionResult> DeleteEpisode([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -117,9 +119,33 @@ namespace HolidayChecklist.Controllers
             return Ok(episode);
         }
 
+        // DELETE: api/Episodes/5
+        [HttpDelete("Show/{id}")]
+        public async Task<IActionResult> DeleteEpisodes([FromRoute] int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var Episodes =  _context.Episode.Where(x => x.ShowID == id);
+            if (Episodes == null)
+            {
+                return NotFound();
+            }
+            foreach(var ep in Episodes){
+                _context.Episode.Remove(ep);
+            }
+            
+            await _context.SaveChangesAsync();
+
+            return Ok(Episodes);
+        }
+
         private bool EpisodeExists(int id)
         {
             return _context.Episode.Any(e => e.EpisodeID == id);
         }
     }
+    
 }

@@ -6,8 +6,8 @@
 <div class="container" id="App">
     <div id = "searchForm" class = "container" style = "padding-top: 20px;">
         <form>
-            <div class = "col-xs-12 col-md-8">
-                <input v-model="searchTerm" class="form-control form-control" type="text" placeholder="Search for a show..."v-on:keyup="searchShow()">
+            <div class = "col-xs-10 col-md-8">
+                <input v-model="searchTerm" class="form-control form-control" type="text" placeholder="Search for a show..."v-on:keyup="searchShow()" v-on:blur="emptySearch()" v-on:keyup.esc="emptySearch()"v-on:keyup.enter.stop.prevent="showDetails(searchResults[0])">
             </div>
             <div class = "col-md-2">
                 <button  v-if="desktop" id = "searchSubmit" type = "submit" class = "btn btn-primary" v-on:click.stop.prevent='searchShow()'>Find</button>
@@ -34,7 +34,7 @@
         </div>  
       </div>
     </div>
-    <div v-if = "showHighlightedShow" class = "container" style ="background-color: white; margin-top: 20px;">
+    <div v-if = "showHighlightedShow" class = "container" style ="background: white; margin-top: 20px; position: absolute; top: 50px; left: 5%; z-index: 20; width: 90%; border-radius: 5px;">
         <div class="col-xs-12 col-md-12">
             <div class="row">
                 <div class = "col-xs-10">
@@ -62,17 +62,76 @@
         </div>
         
     </div>
+    <div v-if = "showHighlightedEpisode" class = "container" style ="background: white; margin-top: 20px; position: absolute; top: 50px; left: 5%; z-index: 20; width: 90%; border-radius: 5px; border-style: outset;">
+        <div class="col-xs-12 col-md-12">
+            <div class="row">
+                <div class = "col-xs-10">
+                    <h3 style="text-align:center;">{{highlightedEpisode.name}}</h3>
+                </div>
+                <div class = "col-xs-2" style = "padding-top: 10px;"> <button v-on:click.stop.prevent="showHighlightedEpisode=false" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true" style ="color:black;"></span></button></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-4" >
+                    <div class="row">
+                        <img v-bind:src="imgURL + highlightedEpisode.still_path" width="100%" style="border-radius: 10px;"/>
+                    </div>
+                </div>
+                <div class="col-xs-8">
+                    <h4>{{highlightedEpisode.showName}}</h4>
+                    <p>Air Date: {{highlightedEpisode.air_date}}</p>
+                    <p>S.{{highlightedEpisode.season_number}} - e.{{highlightedEpisode.episode_number}}</p>
+                    <p>{{highlightedEpisode.overview}}</p>
+                </div>
+            </div>
+            <div class="row">
+                <span><button class="btn btn-default" style="width:100%;margin-bottom:10px;" v-on:click.stop.prevent="showHighlightedEpisode=false">Close</button></span>
+            </div>
+        </div>
+        
+    </div>
+    <div class = "container" v-if = "showEpisodeList">
+        <div v-show = "show.visible" v-for = "show in shows" style="background: white; border-radius: 5px 30px 50px 15px; padding: 1px; margin: 5px;"> 
+           <div data-toggle="collapse" v-bind:data-target="'#' + show.id">
+               <h3 style = "margin-bottom:10px; margin-top:0; overflow:hidden; text-overflow: elipses;background: #f7f7f7;border-radius: 5px 30px 50px 15px; min-height: 2em;">
+                   <div class = "col-xs-9">{{show.title}}</div> 
+                   <div class = "col-xs-3"><span><i class="glyphicon glyphicon-menu-down"></i></span></div>
+                </h3>
+            </div>
+            <div class="collapse" v-bind:id="show.id">
+
+                <ul style = "padding-left:5px;">
+                    <li  v-for = "episode in getEpisodes(show.id)" style = "list-style-type:none;">
+                        <div v-if="episode.watched"><input type="checkbox" v-on:click ="updateWatched(episode.episodeID)" v-bind:checked = "episode.watched" style="margin-right: 10px;width: 20px;height: 20px;"><s style="font-size:1.25em;">{{episode.seasonNumber}}.{{episode.episodeNumber}}: {{episode.episodeTitle}}</s></div>
+                        <div v-else > <input type="checkbox" v-on:click ="updateWatched(episode.episodeID)" v-bind:checked="episode.watched" style="margin-right: 10px;width: 20px;height: 20px;"><span v-on:click=highlightShow(episode) style="font-size:1.25em;">{{episode.seasonNumber}}.{{episode.episodeNumber}}: {{episode.episodeTitle}}</span></div>
+                    </li>
+                </ul>
+                <div class="row">
+                    <div class="col-xs-5">
+                        <button style="width: 100%;" class = btn v-on:click.stop.prevent="toggleAllWatched(show.id)"><i class="glyphicon glyphicon-check"></i></button>
+                    </div>
+                    <div class = "col-xs-1"></div>
+                    <div class = "col-xs-5"><button v-on:click ="DeleteShow(show.id)" class="btn btn-danger" style="width:100%;margin-bottom:10px;"><i class="glyphicon glyphicon-trash"></i></button></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class = "btn btn-success" v-on:click.stop.prevent="randomShow()" style="z-index: 10; height: 60px; width: 60px; border-radius: 30px; border-style: outset; position: fixed; bottom: 20px; left: 45%; font-size: 2em;">
+        <div style="vertical-align:middle;"><i class="glyphicon glyphicon-random"></i></div>
+    </button>
 </div>
 
 @section Scripts {
-    <script>
+
+<script>
     var ItemsVue = new Vue({
             el: '#App',
             data: {
+                loading: false,
                 desktop: false,
                 searchTerm: "",
                 searchResults: "",
                 highlightedShow: "",
+                highlightedEpisode: "",
                 savedShow:{ 
                     ShowID: 0,
                     ShowTitle: "",
@@ -83,6 +142,7 @@
                     EpisodeAirDate: "1700-01-01",
                     EpisodeTitle: "",
                     EpisodeOverview: "",
+                    Watched: false
                 },
                 ajaxSeasons: [{
                     id: 0,
@@ -90,30 +150,64 @@
                     NumberOfSeasons: 0,
                     Season: 0
                 }],
-                ajaxEpisodes: [{
-                    ShowID: 0,
-                    SeasonNumber: 0,
-                    ShowTitle: "",
-                    ShowBackdropPath: "",
-                    ShowOverview: "",
-                    EpisodeAirDate: "",
-                    EpisodeNumber: 0,
-                    EpisodeTitle: "",
-                    EpisodeOverview: ""
-                }],
+                shows: [],
                 episodes: [] ,
+                promise: '',
+                promises: [],
                 showSearchResults: false,
                 showHighlightedShow: false,
+                showHighlightedEpisode: false,
+                showEpisodeList: true,
                 baseURL: "https://api.themoviedb.org/3/",
-                imgURL: "https://image.tmdb.org/t/p/w300",
+                imgURL: "https://image.tmdb.org/t/p/w300/",
                 apiKEY: "api_key=dfb21457261ef1c427601ffcefc3da80"
             },
             
             mounted: function () {
-            
-               
+                this.getShows();
             },
             methods: { 
+                getShows: function(){
+                    var self = this;
+                    self.shows = [];
+                    $.ajax({
+                        url: "api/Episodes",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'GET',
+                        success: function (data){
+                            //self.shows = [...new Set(data.map(item => item.showTitle))];
+
+                            //Filtering help from Travis J: https://stackoverflow.com/questions/15125920/how-to-get-distinct-values-from-an-array-of-objects-in-javascript
+
+                            var unique = {};
+                            var distinct = [];
+                                for( var i in data ){
+                                if( typeof(unique[data[i].showTitle]) == "undefined"){
+                                self.shows.push(
+                                    show = {
+                                        title: data[i].showTitle,
+                                        id: data[i].showID,
+                                        visible: true,
+                                    }
+                                    );
+                                }
+                                unique[data[i].showTitle] = 0;
+                                }
+                                //console.log(self.shows);
+
+                            self.episodes = data;
+                            //console.log(data);
+                        },
+                        error: function(error){
+
+                        }
+                    })
+                },
+                getEpisodes: function(showID){
+                    var self = this;
+                    return self.episodes.filter(episode => episode.showID == showID)
+                },
                 searchShow: function(searchTerm){
                     var self = this;
                     
@@ -124,7 +218,7 @@
                         dataType: 'json',
                         contentType: 'application/json',
                         method: 'GET',
-                        success: function (data) {
+                        success: function (data){
                             self.searchResults = data.results.sort(function(a,b){
                                 return b.popularity - a.popularity;
                             }).slice(0,3);
@@ -146,6 +240,24 @@
                     self.showSearchResults = false;
                     self.showHighlightedShow = false;
                 },
+                DeleteShow: function(item){
+                    var self = this;                   
+                   
+                    $.ajax({
+                        url: "api/Episodes/Show/" + item,
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'DELETE',
+                        success: function(show) {
+                            self.shows.filter(show => ~[item].indexOf(show.id))[0].visible = false;
+                            self.shows = self.shows.filter(show => show.id != item);
+                            self.episodes = self.episodes.filter(episode => episode.showID != item)
+                        },
+                        error: function(error){
+                            console.log(error);
+                        }
+                    })
+                },
                 showDetails: function(item){
                     var self = this;
                     self.showSearchResults = false;
@@ -155,7 +267,6 @@
                         contentType: 'application/json',
                         method: 'GET',
                         success: function (show) {
-                            self.ajaxShowDetails = show;
                             self.highlightedShow = show;
                         },
                         error: function (error) {
@@ -164,6 +275,26 @@
                         }
                     });
                     self.showHighlightedShow = true;
+                },
+                highlightShow: function(item){
+                    var self = this;
+                    self.showSearchResults = false;
+                    console.log(item);
+                    $.ajax({
+                        url: self.baseURL + "tv/" + item.showID + "/season/"+ item.seasonNumber + "/episode/" + item.episodeNumber+"?"+ self.apiKEY +"&language=en-US",
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'GET',
+                        success: function (show) {
+                            self.highlightedEpisode = show;
+                            self.highlightedEpisode.showName = item.showTitle;
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't find that show. D:");
+                        }
+                    });
+                    self.showHighlightedEpisode = true;
                 },
                 getSeasonDetails: function(id,season){
                     var self = this;
@@ -181,8 +312,70 @@
                         }
                     });
                 },
+                updateWatched: function(id){
+                    var self = this;
+                    var editEpisode = self.episodes.filter(episode => episode.episodeID == id)[0];
+                    editEpisode.watched = !editEpisode.watched;
+                    $.ajax({
+                        url: "api/Episodes/" + id,
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'PUT',
+                        data: JSON.stringify(editEpisode),
+                        success: function (episode) {
+                            
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't edit that show D:");
+                        }
+                    });
+                },
+                toggleAllWatched: function(show){
+                    var self = this;
+                    var editEpisodes = self.episodes.filter(episode => episode.showID == show);
+                    function isChecked(episode) {
+                        return episode;
+                    }
+                    var containsCheck = self.episodes.filter(episode => episode.showID == show).map(episode => episode.watched).includes(true);
+                    var allChecked = self.episodes.filter(episode => episode.showID == show).map(episode => episode.watched).every(isChecked);
+                    for(episode in editEpisodes){
+                        if((containsCheck==true && allChecked==false) || (containsCheck == false && allChecked==false)){
+                            editEpisodes[episode].watched = true;
+                        }
+                        else{editEpisodes[episode].watched = false;}
+                        $.ajax({
+                            url: "api/Episodes/" + editEpisodes[episode].episodeID,
+                            dataType: 'json',
+                            contentType: 'application/json',
+                            method: 'PUT',
+                            data: JSON.stringify(editEpisodes[episode]),
+                            success: function (episode) {
+                            },
+                            error: function (error) {
+                                console.log(error);
+                                alert("Oh no! We couldn't edit that show D:");
+                            }
+                        });
+                    }
+                    
+                },
+                randomShow: function(){
+                    var self = this;
+                    self.highlightShow(self.episodes[Math.floor(Math.random() * self.episodes.length)]);
+                },
                 saveShow: function(item){
                     var self = this;
+                    console.log(item.name);
+                    let showNames = self.shows.map(a => a.title);
+                    if (showNames.includes(item.name)){
+                        showSearchResults = false;
+                        showHighlightedShow = false;
+                        self.emptySearch();
+                        alert("You've already saved that show.");
+                        
+                    }
+                    else{
                     for(var i = 0;i < self.highlightedShow.number_of_seasons;i++){
                         (function(){
                             var seasonnum = i;
@@ -199,7 +392,7 @@
                                             NumberOfSeasons: item.number_of_episodes,
                                             Season: season.season_number
                                         };
-                                        console.log("test");
+                                        
                                         for(var j = 0;j < season.episodes.length;j++){
                                             
                                             (function(){
@@ -211,27 +404,48 @@
                                                         ShowTitle: item.name,
                                                         ShowBackdropPath: item.backdrop_path,
                                                         ShowOverview: item.overview,
-                                                        EpisodeAirDate: season.episodes[episode].air_date,
+                                                        EpisodeAirDate: !season.episodes[episode].air_date ? "1700-01-01" : season.episodes[episode].air_date,
                                                         EpisodeNumber: season.episodes[episode].episode_number,
                                                         EpisodeTitle: season.episodes[episode].name,
-                                                        EpisodeOverview: season.episodes[episode].overview,
+                                                        EpisodeOverview: season.episodes[episode].overview = "" ? "null" : season.episodes[episode].overview,
+                                                        Watched: season.episodes[episode].watched
                                                     };
-                                                    self.ajaxEpisodes.push(newEpisode);
-                                                },1000);
-                                            })();
-                                        };
+                                                    //self.ajaxEpisodes.push(newEpisode);
+                                                    //console.log(newEpisode);
+                                                    
+                                                    var request = $.ajax({
+                                                        url: "api/Episodes",
+                                                        dataType: 'json',
+                                                        contentType: 'application/json',
+                                                        method: 'POST',
+                                                        data: JSON.stringify(newEpisode),
+                                                        success: function(reuslts){
+                                                        },
+                                                        error: function(error){
+                                                            console.log("oh no, we failed to save those episodes");
+                                                            console.log(error);
+                                                        }
+                                                    });
+                                                    
+                                                },1);
+                                            })();  
+                                        }
                                         self.ajaxSeasons.push(newSeason);
                                     },
                                     error: function (error) {
                                         console.log(error);
                                         alert("Oh no! We couldn't find those episodes. D:");
                                     }
-                                });
-                            },1000);
-                        })();
+                                    
+                                })
+                            },100);
+                            self.showHighlightedShow= false;
+                            
+                        })()
                     };
-                },
                 
+                };
+                },
             }     
         });
 </script>
