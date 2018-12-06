@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HolidayChecklist.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20181130013252_InitialCreate")]
+    [Migration("20181202174657_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,6 +40,8 @@ namespace HolidayChecklist.Migrations
                     b.Property<string>("ShowOverview");
 
                     b.Property<string>("ShowTitle");
+
+                    b.Property<bool>("Watched");
 
                     b.HasKey("EpisodeID");
 

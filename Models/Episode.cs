@@ -28,6 +28,7 @@ namespace HolidayChecklist.Models
         public string EpisodeTitle {get;set;}
 
         public string EpisodeOverview {get; set;}
+        public Boolean Watched {get; set;}
 
     }
 }

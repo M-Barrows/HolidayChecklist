@@ -21,7 +21,8 @@ namespace HolidayChecklist.Migrations
                     EpisodeAirDate = table.Column<DateTime>(nullable: false),
                     EpisodeNumber = table.Column<int>(nullable: false),
                     EpisodeTitle = table.Column<string>(nullable: true),
-                    EpisodeOverview = table.Column<string>(nullable: true)
+                    EpisodeOverview = table.Column<string>(nullable: true),
+                    Watched = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {

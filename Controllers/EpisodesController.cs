@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,9 +25,43 @@ namespace HolidayChecklist.Controllers
         [HttpGet]
         public IEnumerable<Episode> GetEpisode()
         {
-            return _context.Episode;
+            var results = _context.Episode.Distinct().OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber);
+            return results;
         }
 
+        //GET: api/Episodes/Christmas
+        [HttpGet("{holiday}")]
+        public IEnumerable<Episode> GetEpisode([FromRoute] string holiday)
+        {
+            if((holiday == "Christmas") || (holiday == "Kwanzaa") || (holiday == "Hanukkah")){
+                var results = _context.Episode.Distinct().Where(x => x.EpisodeAirDate.Month == 12 && x.EpisodeAirDate.Day >10).OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber)
+                    .Union(_context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains("Christmas", System.StringComparison.CurrentCultureIgnoreCase)))
+                    .Union(_context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains("Kwanzaa", System.StringComparison.CurrentCultureIgnoreCase)))
+                    .Union(_context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains("Hanukkah", System.StringComparison.CurrentCultureIgnoreCase)));
+                return results;
+            }
+            else if(holiday =="Halloween"){
+                var results = _context.Episode.Distinct().Where(x => x.EpisodeAirDate.Month == 10 && x.EpisodeAirDate.Day > 15).OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber)
+                .Union(_context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains("Halloween", System.StringComparison.CurrentCultureIgnoreCase)));;
+                return results;
+            }
+            else{
+                var results = _context.Episode.Distinct().OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber);
+                return results;
+            }
+            
+        }
+        //GET: /api/search/
+        /*
+        [HttpGet("search")]
+        public IEnumerable<Episode> GetSearchedEpisode([FromBody] string term)
+        {
+            var search = Regex.Replace(term, @"\s+","%20");
+            var results = _context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains(search, System.StringComparison.CurrentCultureIgnoreCase));
+            return results;
+            
+        }
+*/
         // GET: api/Episodes/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEpisode([FromRoute] int id)
@@ -60,7 +95,9 @@ namespace HolidayChecklist.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(episode).State = EntityState.Modified;
+           _context.Entry(episode).State = EntityState.Modified;
+
+            _context.SaveChanges();
 
             try
             {
@@ -95,9 +132,8 @@ namespace HolidayChecklist.Controllers
 
             return CreatedAtAction("GetEpisode", new { id = episode.EpisodeID }, episode);
         }
-
-        // DELETE: api/Episodes/5
-        [HttpDelete("{id}")]
+        // DELETE: api/Episodes/
+        [HttpDelete]
         public async Task<IActionResult> DeleteEpisode([FromRoute] int id)
         {
             if (!ModelState.IsValid)
@@ -117,9 +153,33 @@ namespace HolidayChecklist.Controllers
             return Ok(episode);
         }
 
+        // DELETE: api/Show/Episodes/5
+        [HttpDelete("Show/{id}")]
+        public async Task<IActionResult> DeleteEpisodes([FromRoute] int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var Episodes =  _context.Episode.Where(x => x.ShowID == id);
+            if (Episodes == null)
+            {
+                return NotFound();
+            }
+            foreach(var ep in Episodes){
+                _context.Episode.Remove(ep);
+            }
+            
+            await _context.SaveChangesAsync();
+
+            return Ok(Episodes);
+        }
+
         private bool EpisodeExists(int id)
         {
             return _context.Episode.Any(e => e.EpisodeID == id);
         }
     }
+    
 }
