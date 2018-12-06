@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,10 +25,43 @@ namespace HolidayChecklist.Controllers
         [HttpGet]
         public IEnumerable<Episode> GetEpisode()
         {
-            var results = _context.Episode.Distinct().Where(x => x.EpisodeAirDate.Month == 12).OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber);
+            var results = _context.Episode.Distinct().OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber);
             return results;
         }
 
+        //GET: api/Episodes/Christmas
+        [HttpGet("{holiday}")]
+        public IEnumerable<Episode> GetEpisode([FromRoute] string holiday)
+        {
+            if((holiday == "Christmas") || (holiday == "Kwanzaa") || (holiday == "Hanukkah")){
+                var results = _context.Episode.Distinct().Where(x => x.EpisodeAirDate.Month == 12 && x.EpisodeAirDate.Day >10).OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber)
+                    .Union(_context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains("Christmas", System.StringComparison.CurrentCultureIgnoreCase)))
+                    .Union(_context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains("Kwanzaa", System.StringComparison.CurrentCultureIgnoreCase)))
+                    .Union(_context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains("Hanukkah", System.StringComparison.CurrentCultureIgnoreCase)));
+                return results;
+            }
+            else if(holiday =="Halloween"){
+                var results = _context.Episode.Distinct().Where(x => x.EpisodeAirDate.Month == 10 && x.EpisodeAirDate.Day > 15).OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber)
+                .Union(_context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains("Halloween", System.StringComparison.CurrentCultureIgnoreCase)));;
+                return results;
+            }
+            else{
+                var results = _context.Episode.Distinct().OrderBy(x => x.ShowTitle).ThenBy(x => x.Watched).ThenBy(x => x.SeasonNumber).ThenBy(x => x.EpisodeNumber);
+                return results;
+            }
+            
+        }
+        //GET: /api/search/
+        /*
+        [HttpGet("search")]
+        public IEnumerable<Episode> GetSearchedEpisode([FromBody] string term)
+        {
+            var search = Regex.Replace(term, @"\s+","%20");
+            var results = _context.Episode.Distinct().Where(x => x.EpisodeOverview.Contains(search, System.StringComparison.CurrentCultureIgnoreCase));
+            return results;
+            
+        }
+*/
         // GET: api/Episodes/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetEpisode([FromRoute] int id)
@@ -119,7 +153,7 @@ namespace HolidayChecklist.Controllers
             return Ok(episode);
         }
 
-        // DELETE: api/Episodes/5
+        // DELETE: api/Show/Episodes/5
         [HttpDelete("Show/{id}")]
         public async Task<IActionResult> DeleteEpisodes([FromRoute] int id)
         {

@@ -239,7 +239,7 @@ using HolidayChecklist;
             WriteLiteral("\r\n        </dd>\r\n    </dl>\r\n</div>\r\n<div>\r\n    ");
             EndContext();
             BeginContext(1996, 69, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "7e610a91b53943d5b54c14bfbfa9faed", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "17892b83cf60404bb325f614eda0d2e8", async() => {
                 BeginContext(2057, 4, true);
                 WriteLiteral("Edit");
                 EndContext();
@@ -274,7 +274,7 @@ using HolidayChecklist;
             WriteLiteral(" |\r\n    ");
             EndContext();
             BeginContext(2073, 38, false);
-            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "96740bf65acd4ad39f5b5e8d176ec3f3", async() => {
+            __tagHelperExecutionContext = __tagHelperScopeManager.Begin("a", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "e9d0b573841d42669a732875cdbfb0e4", async() => {
                 BeginContext(2095, 12, true);
                 WriteLiteral("Back to List");
                 EndContext();

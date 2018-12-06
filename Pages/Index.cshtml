@@ -4,120 +4,142 @@
     ViewData["Title"] = "Home page";
 }
 <div class="container" id="App">
-    <div id = "searchForm" class = "container" style = "padding-top: 20px;">
-        <form>
-            <div class = "col-xs-10 col-md-8">
-                <input v-model="searchTerm" class="form-control form-control" type="text" placeholder="Search for a show..."v-on:keyup="searchShow()" v-on:blur="emptySearch()" v-on:keyup.esc="emptySearch()"v-on:keyup.enter.stop.prevent="showDetails(searchResults[0])">
-            </div>
-            <div class = "col-md-2">
-                <button  v-if="desktop" id = "searchSubmit" type = "submit" class = "btn btn-primary" v-on:click.stop.prevent='searchShow()'>Find</button>
-            </div>
-            <div class = "col-md-2">
-                <button v-if="desktop" id = "searchCancel" class = "btn btn-default" v-on:click.stop.prevent="emptySearch()">Back</button>
-            </div>
-        </form>
-    </div>
-    <div  v-show ="showSearchResults" class="container" stle="z-index: 3;">
-      <div class="row text-center text-left">
-        <div class="col-xs-12 col-md-8">
-          <div class="list-group my-3">
-            <a v-for = "item in searchResults"v-on:click.stop.prevent="showDetails(item)" href="#" class="list-group-item list-group-item-action d-flex   align-items-center">
-                <div class ="row">
-                    <h4 v-if="desktop">{{item.name}} ({{item.first_air_date}})</h4>
-                    <p v-else class="mb-0 text-center">{{item.name}} - ({{item.first_air_date.substring(0,4)}})</p>
-                    <img v-if="desktop" class="d-block float-right img-thumbnail img-fluid" v-bind:src="imgURL + item.poster_path" width="60" height="60" > 
-                    <button class="btn btn-danger"v-if="desktop"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button>
-                    <button class="btn btn-info"v-if="desktop"><span class="glyphicon glyphicon-info-sign" aria-hidden="true" style ="color:white;"></span></button>
+<div v-if="desktop" style="position: fixed; top: 0; left: 0; background-color: #333; width: 200px; height: 100%">
+    <ul style="color: white; margin-top: 70px; list-style:none; padding-left: 5px;">
+        <li style="font-size: 2em">
+            Coming Soon!
+        </li>
+        <li style="margin-top: 50px; padding-right: 5px"> 
+            <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="inputGroup-sizing-sm">Text Search</span>
                 </div>
-            </a>
-          </div>
-        </div>  
-      </div>
-    </div>
-    <div v-if = "showHighlightedShow" class = "container" style ="background: white; margin-top: 20px; position: absolute; top: 50px; left: 5%; z-index: 20; width: 90%; border-radius: 5px;">
-        <div class="col-xs-12 col-md-12">
-            <div class="row">
-                <div class = "col-xs-10">
-                    <h3 style="text-align:center;">{{highlightedShow.name}}</h3>
-                </div>
-                <div class = "col-xs-2"> <button class="btn btn-default"v-if="desktop"><span class="glyphicon glyphicon-remove" aria-hidden="true" style ="color:white;"></span></button></div>
+                <input v-model="episodeSearchTerm" v-on:change ="getOverviewSearch(episodeSearchTerm)" type="text" class="form-control" aria-label="Small" aria-describedby="inputGroup-sizing-sm">
             </div>
-            <div class="row">
-                <div class="col-xs-4" >
-                    <div class="row">
-                        <img v-bind:src="imgURL + highlightedShow.poster_path" width="100%" style="border-radius: 10px;"/>
-                    </div>
-                    <div class="row">
-                        <div class="col-xs-12"><button v-on:click="saveShow(highlightedShow)" class="btn btn-danger" style="width:100%; margin-top:10px"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button></div>
-                    </div>
-                </div>
-                <div class="col-xs-8">
-                    <p>First Air Date: {{highlightedShow.first_air_date}}</p>
-                    <p>{{highlightedShow.overview}}</p>
-                </div>
+        </li>
+        <li style="margin-top: 50px; padding-right: 5px">
+            Holiday Selection
+            <div class="list-group">
+                <a v-for="holiday in holidays" v-on:click.stop.prevent="getShows(holiday)" href="#" class="list-group-item list-group-item-action">{{holiday}}</a>
             </div>
-            <div class="row">
-                <span><button class="btn btn-default" style="width:100%;margin-bottom:10px;" v-on:click.stop.prevent="emptySearch()">Cancel</button></span>
-            </div>
-        </div>
-        
-    </div>
-    <div v-if = "showHighlightedEpisode" class = "container" style ="background: white; margin-top: 20px; position: absolute; top: 50px; left: 5%; z-index: 20; width: 90%; border-radius: 5px; border-style: outset;">
-        <div class="col-xs-12 col-md-12">
-            <div class="row">
-                <div class = "col-xs-10">
-                    <h3 style="text-align:center;">{{highlightedEpisode.name}}</h3>
-                </div>
-                <div class = "col-xs-2" style = "padding-top: 10px;"> <button v-on:click.stop.prevent="showHighlightedEpisode=false" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true" style ="color:black;"></span></button></div>
-            </div>
-            <div class="row">
-                <div class="col-xs-4" >
-                    <div class="row">
-                        <img v-bind:src="imgURL + highlightedEpisode.still_path" width="100%" style="border-radius: 10px;"/>
-                    </div>
-                </div>
-                <div class="col-xs-8">
-                    <h4>{{highlightedEpisode.showName}}</h4>
-                    <p>Air Date: {{highlightedEpisode.air_date}}</p>
-                    <p>S.{{highlightedEpisode.season_number}} - e.{{highlightedEpisode.episode_number}}</p>
-                    <p>{{highlightedEpisode.overview}}</p>
-                </div>
-            </div>
-            <div class="row">
-                <span><button class="btn btn-default" style="width:100%;margin-bottom:10px;" v-on:click.stop.prevent="showHighlightedEpisode=false">Close</button></span>
-            </div>
-        </div>
-        
-    </div>
-    <div class = "container" v-if = "showEpisodeList">
-        <div v-show = "show.visible" v-for = "show in shows" style="background: white; border-radius: 5px 30px 50px 15px; padding: 1px; margin: 5px;"> 
-           <div data-toggle="collapse" v-bind:data-target="'#' + show.id">
-               <h3 style = "margin-bottom:10px; margin-top:0; overflow:hidden; text-overflow: elipses;background: #f7f7f7;border-radius: 5px 30px 50px 15px; min-height: 2em;">
-                   <div class = "col-xs-9">{{show.title}}</div> 
-                   <div class = "col-xs-3"><span><i class="glyphicon glyphicon-menu-down"></i></span></div>
-                </h3>
-            </div>
-            <div class="collapse" v-bind:id="show.id">
+        </li>
+        <li>
+            <button v-if="desktop" class = "btn btn-success" v-on:click.stop.prevent="randomShow()" style="z-index: 10; height: 60px; width: 60px; border-radius: 30px; border-style: outset; position: fixed; bottom: 20px; left: 70px; font-size: 2em;">
+                <div style="vertical-align:middle;"><i class="glyphicon glyphicon-random"></i></div>
+            </button>
+        </li>
 
-                <ul style = "padding-left:5px;">
-                    <li  v-for = "episode in getEpisodes(show.id)" style = "list-style-type:none;">
-                        <div v-if="episode.watched"><input type="checkbox" v-on:click ="updateWatched(episode.episodeID)" v-bind:checked = "episode.watched" style="margin-right: 10px;width: 20px;height: 20px;"><s style="font-size:1.25em;">{{episode.seasonNumber}}.{{episode.episodeNumber}}: {{episode.episodeTitle}}</s></div>
-                        <div v-else > <input type="checkbox" v-on:click ="updateWatched(episode.episodeID)" v-bind:checked="episode.watched" style="margin-right: 10px;width: 20px;height: 20px;"><span v-on:click=highlightShow(episode) style="font-size:1.25em;">{{episode.seasonNumber}}.{{episode.episodeNumber}}: {{episode.episodeTitle}}</span></div>
-                    </li>
-                </ul>
-                <div class="row">
-                    <div class="col-xs-5">
-                        <button style="width: 100%;" class = btn v-on:click.stop.prevent="toggleAllWatched(show.id)"><i class="glyphicon glyphicon-check"></i></button>
+    </ul>
+</div>
+    <div v-bind:style="sidebar">
+        <div id = "searchForm" class = "container" style = "padding-top: 20px;">
+            <form>
+                <div class = "col-xs-12 col-md-5">
+                    <input v-model="searchTerm" class="form-control form-control input-lg" type="text" placeholder="Search for a show..."v-on:keyup="searchShow()" v-on:keyup.esc="emptySearch()"v-on:keyup.enter.stop.prevent="showDetails(searchResults[0])">
+                </div>
+            </form>
+        </div>
+        <div  v-show ="showSearchResults" class="container" stle="z-index: 3;">
+        <div class="row text-center text-left">
+            <div class="col-xs-12 col-md-6">
+            <div class="list-group my-3">
+                <a v-for = "item in searchResults"v-on:click="showDetails(item)" href="#" class="list-group-item list-group-item-action d-flex   align-items-center">
+                    <div class ="row">
+                        <h4 v-if="desktop">{{item.name}} ({{item.first_air_date}})</h4>
+                        <p v-else class="mb-0 text-center">{{item.name}} - ({{item.first_air_date.substring(0,4)}})</p>
+                        <img v-if="desktop" class="d-block float-right img-thumbnail img-fluid" v-bind:src="imgURL + item.poster_path" width="60" height="60" > 
+                        <button v-on:click.stop.prevent="showDetails(item)" class="btn btn-info"v-if="desktop"><span class="glyphicon glyphicon-info-sign" aria-hidden="true" style ="color:white;"></span></button>
                     </div>
-                    <div class = "col-xs-1"></div>
-                    <div class = "col-xs-5"><button v-on:click ="DeleteShow(show.id)" class="btn btn-danger" style="width:100%;margin-bottom:10px;"><i class="glyphicon glyphicon-trash"></i></button></div>
+                </a>
+            </div>
+            </div>  
+        </div>
+        </div>
+        <div v-if = "showHighlightedShow" class ="col-xs-10 col-md-6" style ="background: white; margin-top: 20px; position: absolute; top: 50px; z-index: 20; border-radius: 5px; border-style: outset;">
+            <div class="col-xs-12 col-md-12">
+                <div class="row">
+                    <div class = "col-xs-10">
+                        <h3 style="text-align:center;">{{highlightedShow.name}}</h3>
+                    </div>
+                    <div class = "col-xs-2"> <button class="btn btn-default" v-on:click.stop.prevent="emptySearch()"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-4" >
+                        <div class="row">
+                            <img v-bind:src="imgURL + highlightedShow.poster_path" width="100%" style="border-radius: 10px;"/>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12"><button v-on:click="saveShow(highlightedShow)" class="btn btn-danger" style="width:100%; margin-top:10px"><span class="glyphicon glyphicon-heart" aria-hidden="true" style ="color:white;"></span></button></div>
+                        </div>
+                    </div>
+                    <div class="col-xs-8">
+                        <p>First Air Date: {{highlightedShow.first_air_date}}</p>
+                        <p>{{highlightedShow.overview}}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <span><button class="btn btn-default" style="width:100%;margin-bottom:10px;" v-on:click.stop.prevent="emptySearch()">Cancel</button></span>
+                </div>
+            </div>
+            
+        </div>
+        <div v-if = "showHighlightedEpisode" class ="col-xs-10 col-md-6" style ="background: white; margin-top: 20px; position: absolute; top: 50px; z-index: 20; border-radius: 5px; border-style: outset;">
+            <div class="col-xs-12 col-md-12">
+                <div class="row">
+                    <div class = "col-xs-10">
+                        <h3 style="text-align:center;">{{highlightedEpisode.name}}</h3>
+                    </div>
+                    <div class = "col-xs-2" style = "padding-top: 10px;"> <button v-on:click.stop.prevent="showHighlightedEpisode=false" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true" style ="color:black;"></span></button></div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-4" >
+                        <div class="row">
+                            <img v-bind:src="imgURL + highlightedEpisode.still_path" width="100%" style="border-radius: 10px;"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-8">
+                        <h4>{{highlightedEpisode.showName}}</h4>
+                        <p>Air Date: {{highlightedEpisode.air_date}}</p>
+                        <p>S.{{highlightedEpisode.season_number}} - e.{{highlightedEpisode.episode_number}}</p>
+                        <p>{{highlightedEpisode.overview}}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <span><button class="btn btn-default" style="width:100%;margin-bottom:10px;" v-on:click.stop.prevent="showHighlightedEpisode=false">Close</button></span>
+                </div>
+            </div>
+            
+        </div>
+        <div v-if = "showEpisodeList" class = "container col-md-6" >
+            <div v-show = "show.visible" clss="col-xs-12" v-for = "show in shows" style="background: white; border-radius: 5px 30px 50px 15px; padding: 1px; margin: 5px;"> 
+            <div data-toggle="collapse" v-bind:data-target="'#' + show.id" clss="col-xs-12">
+                <h3 style = "margin-bottom:10px; margin-top:0; overflow:hidden; text-overflow: elipses;background: #f7f7f7;border-radius: 5px 30px 50px 15px; min-height: 2em;">
+                    <div class = "col-xs-9 col-md-10">{{show.title}}</div> 
+                    <div class = "col-xs-3 col-md-1"><span><i class="glyphicon glyphicon-menu-down"></i></span></div>
+                    </h3>
+                </div>
+                <div class="collapse" v-bind:id="show.id">
+
+                    <ul style = "padding-left:5px;">
+                        <li  v-for = "episode in getEpisodes(show.id)" style = "list-style-type:none;">
+                            <div v-if="episode.watched"><input type="checkbox" v-on:click ="updateWatched(episode.episodeID)" v-bind:checked = "episode.watched" style="margin-right: 10px;width: 20px;height: 20px;"><s style="font-size:1.25em;">{{episode.seasonNumber}}.{{episode.episodeNumber}}: {{episode.episodeTitle}}</s></div>
+                            <div v-else > <input type="checkbox" v-on:click ="updateWatched(episode.episodeID)" v-bind:checked="episode.watched" style="margin-right: 10px;width: 20px;height: 20px;"><span v-on:click=highlightShow(episode) style="font-size:1.25em;">{{episode.seasonNumber}}.{{episode.episodeNumber}}: {{episode.episodeTitle}}</span></div>
+                        </li>
+                    </ul>
+                    <div class="row">
+                        <div class="col-xs-5">
+                            <button style="width: 100%;" class = btn v-on:click.stop.prevent="toggleAllWatched(show.id)"><i class="glyphicon glyphicon-check"></i></button>
+                        </div>
+                        <div class = "col-xs-1"></div>
+                        <div class = "col-xs-5"><button v-on:click ="DeleteShow(show.id)" class="btn btn-danger" style="width:100%;margin-bottom:10px;"><i class="glyphicon glyphicon-trash"></i></button></div>
+                    </div>
                 </div>
             </div>
         </div>
+        <button v-if="desktop != true" class = "btn btn-success" v-on:click.stop.prevent="randomShow()" style="z-index: 10; height: 60px; width: 60px; border-radius: 30px; border-style: outset; position: fixed; bottom: 20px; left: 45%; font-size: 2em;">
+            <div style="vertical-align:middle;"><i class="glyphicon glyphicon-random"></i></div>
+        </button>
     </div>
-    <button class = "btn btn-success" v-on:click.stop.prevent="randomShow()" style="z-index: 10; height: 60px; width: 60px; border-radius: 30px; border-style: outset; position: fixed; bottom: 20px; left: 45%; font-size: 2em;">
-        <div style="vertical-align:middle;"><i class="glyphicon glyphicon-random"></i></div>
-    </button>
 </div>
 
 @section Scripts {
@@ -129,9 +151,11 @@
                 loading: false,
                 desktop: false,
                 searchTerm: "",
+                episodeSearchTerm: "",
                 searchResults: "",
                 highlightedShow: "",
                 highlightedEpisode: "",
+                ads:"E:\\GitHub\\HolidayChecklist\\wwwroot\\images\\Ads.jpg",
                 savedShow:{ 
                     ShowID: 0,
                     ShowTitle: "",
@@ -154,6 +178,8 @@
                 episodes: [] ,
                 promise: '',
                 promises: [],
+                sidebar:"",
+                holidays: ["Christmas","Hanukkah","Kwanzaa","Halloween"],
                 showSearchResults: false,
                 showHighlightedShow: false,
                 showHighlightedEpisode: false,
@@ -164,22 +190,34 @@
             },
             
             mounted: function () {
-                this.getShows();
+                this.getShows(this.holidays[0]);
+                this.isDesktop();
             },
             methods: { 
-                getShows: function(){
+                isDesktop: function() {
+                var self = this;
+                var md = new MobileDetect(window.navigator.userAgent);
+                if( md.match('mobile'))
+                    {
+                        self.desktop = false;
+                        self.sidebar ="margin-left:0px;";
+                    }
+                    else {
+                        self.desktop = true;
+                        self.sidebar="margin-left:150px;";
+                    }
+                },
+                getShows: function(holiday){
                     var self = this;
                     self.shows = [];
                     $.ajax({
-                        url: "api/Episodes",
+                        url: "api/Episodes/"+holiday,
                         dataType: 'json',
                         contentType: 'application/json',
                         method: 'GET',
                         success: function (data){
-                            //self.shows = [...new Set(data.map(item => item.showTitle))];
 
                             //Filtering help from Travis J: https://stackoverflow.com/questions/15125920/how-to-get-distinct-values-from-an-array-of-objects-in-javascript
-
                             var unique = {};
                             var distinct = [];
                                 for( var i in data ){
@@ -194,10 +232,7 @@
                                 }
                                 unique[data[i].showTitle] = 0;
                                 }
-                                //console.log(self.shows);
-
                             self.episodes = data;
-                            //console.log(data);
                         },
                         error: function(error){
 
@@ -231,6 +266,29 @@
                     }
                     else{
                         self.showSearchResults = false;
+                    }
+                },
+                getOverviewSearch: function(episodeSearchTerm){
+                    var self = this;
+                    var searchTerm = {term: self.episodeSearchTerm};
+                    if(self.episodeSearchTerm.length>=2){
+                        $.ajax({
+                        url: "api/search/" ,
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        method: 'GET',
+                        data: JSON.stringify(searchTerm),
+                        success: function (data){
+                            self.episodes = data;
+                            self.getShows();
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert("Oh no! We couldn't find your shows. D:");
+                        }
+                        });
+                    }
+                    else{
                     }
                 },
                 emptySearch: function(){
@@ -446,7 +504,9 @@
                 
                 };
                 },
-            }     
+            },    
+            computed: {
+            }
         });
 </script>
 }
